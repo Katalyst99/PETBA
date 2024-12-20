@@ -4,7 +4,7 @@ from flask import Blueprint, request, jsonify
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import create_access_token, JWTManager
 from db import db
-from users import User
+from user import User
 
 bcrypt = Bcrypt()
 jwt = JWTManager()
