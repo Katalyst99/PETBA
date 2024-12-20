@@ -13,6 +13,7 @@ auth_bp = Blueprint("auth", __name__)
 
 @auth_bp.route('/register', methods=['POST'], strict_slashes=False)
 def register():
+    """Function to respond to the POST /register route."""
     data = request.json
     email = data.get("email")
     password = data.get("password")
@@ -29,6 +30,7 @@ def register():
 
 @auth_bp.route('/login', methods=['POST'], strict_slashes=False)
 def login():
+    """Function to respond to the POST /login route."""
     data = request.json
     email = data.get("email")
     password = data.get("password")
