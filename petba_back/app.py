@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """ Starts a Flask Web Application """
 from flask import Flask
-from from db import Database, db
+from db import Database, db
 from routes.auth_routes import auth_bp
 from routes.transaction_routes import transaction_bp
 from routes.budget_routes import budget_bp
