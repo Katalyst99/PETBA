@@ -9,7 +9,7 @@ from expense import Expense
 summary_bp = Blueprint("summary", __name__)
 
 
-@summary_bp.route('/summary', methods=['GET'], strict_slashes=False)
+@summary_bp.route('/get', methods=['GET'], strict_slashes=False)
 @jwt_required()
 def get_summary():
     """Forms a summary report for the authenticated user."""

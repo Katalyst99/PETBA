@@ -8,7 +8,7 @@ from budget import Budget
 budget_bp = Blueprint("budgets", __name__)
 
 
-@budget_bp.route('/budget', methods=['POST'], strict_slashes=False)
+@budget_bp.route('/set', methods=['POST'], strict_slashes=False)
 @jwt_required()
 def set_budget():
     """Endpoint to set a budget"""
