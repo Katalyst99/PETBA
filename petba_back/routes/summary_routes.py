@@ -29,6 +29,6 @@ def get_summary():
     return jsonify({
         "month": month,
         "budget_limit": budget.limit_amount,
-        "total_spent": total_spent,
+        "total_spent": total,
         "remaining_budget": budget.limit_amount - total
     }), 200
