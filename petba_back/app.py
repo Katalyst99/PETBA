@@ -2,16 +2,18 @@
 """ Starts a Flask Web Application """
 from flask import Flask
 from db import Database, db
-from routes.auth_routes import auth_bp
+from routes.auth_routes import auth_bp, jwt
 from routes.trans_routes import transaction_bp
 from routes.budget_routes import budget_bp
 from routes.summary_routes import summary_bp
 
 app = Flask(__name__)
 app.config.from_object(Database)
+app.config['JWT_SECRET_KEY'] = 'Union'
 
 
 db.init_app(app)
+jwt.init_app(app)
 
 
 app.register_blueprint(auth_bp, url_prefix="/auth")
