@@ -18,7 +18,7 @@ def set_budget():
     limit_amount = data.get("limit_amount")
 
     if not month or not limit_amount:
-        return jsonify({"error": "Category and amount are required"}), 400
+        return jsonify({"error": "Month and limit_amount are required"}), 400
 
     existingBudget = Budget.query.filter_by(user_id=user_id,
                                             month=month).first()
