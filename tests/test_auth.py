@@ -3,12 +3,16 @@
 import unittest
 from app import app, db
 from flask_jwt_extended import create_access_token
+from flask_bcrypt import Bcrypt
 from models.user import User
+
+bcrypt = Bcrypt(app)
 
 
 class TestAuthRoutes(unittest.TestCase):
     """Unittesting for Authentication"""
     def setUp(self):
+        """Set up test variables."""
         app.config['TESTING'] = True
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
         self.app = app.test_client()
@@ -32,7 +36,8 @@ class TestAuthRoutes(unittest.TestCase):
     def testValidLogin(self):
         """Testing for valid user login"""
         with app.app_context():
-            user = User(email="petba@example.com", password="password@12")
+            hp = bcrypt.generate_password_hash('password@12').decode('utf-8')
+            user = User(email="petba@example.com", password=hp)
             db.session.add(user)
             db.session.commit()
 
@@ -40,6 +45,7 @@ class TestAuthRoutes(unittest.TestCase):
             "email": "petba@example.com",
             "password": "password@12"
         })
+        print("Response JSON:", response.get_json())
         self.assertEqual(response.status_code, 200)
         self.assertIn('access_token', response.get_json())
 
