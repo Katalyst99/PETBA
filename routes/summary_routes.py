@@ -3,8 +3,8 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from db import db
-from budget import Budget
-from expense import Expense
+from models.budget import Budget
+from models.expense import Expense
 
 summary_bp = Blueprint("summary", __name__)
 

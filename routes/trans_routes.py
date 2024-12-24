@@ -3,7 +3,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from db import db
-from transact import Transaction
+from models.transact import Transaction
 
 transaction_bp = Blueprint("transactions", __name__)
 
