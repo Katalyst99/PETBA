@@ -10,3 +10,4 @@ class Expense(db.Model):
     user_id = db.Column(db.Integer, nullable=False)
     category = db.Column(db.String(80), nullable=False)
     amount = db.Column(db.Float, nullable=False)
+    month = db.Column(db.String(20), nullable=False)
