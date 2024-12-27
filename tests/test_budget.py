@@ -29,10 +29,10 @@ class TestBudgetRoutes(unittest.TestCase):
         """Testing budget is set correctly"""
         with app.app_context():
             token = create_access_token(identity=1)
-        response = self.app.post('/budgets/set', json={
+        resp = self.app.post('/budgets/set', json={
             "month": "December",
             "limit_amount": 500
         }, headers={"Authorization": f'Bearer {token}'})
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(resp.status_code, 201)
         self.assertIn("Budget for December set successfully",
-                      response.get_json()["message"])
+                      resp.get_json()["message"])
