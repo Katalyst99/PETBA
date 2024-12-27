@@ -25,13 +25,13 @@ class TestAuthRoutes(unittest.TestCase):
 
     def test_register(self):
         """Testing user registration"""
-        response = self.app.post('/auth/register', json={
+        resp = self.app.post('/auth/register', json={
             "email": "petba@example.com",
             "password": "password@12"
         })
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(resp.status_code, 201)
         self.assertIn("User registered successfully",
-                      response.get_json()["message"])
+                      resp.get_json()["message"])
 
     def testValidLogin(self):
         """Testing for valid user login"""
@@ -41,19 +41,19 @@ class TestAuthRoutes(unittest.TestCase):
             db.session.add(user)
             db.session.commit()
 
-        response = self.app.post('/auth/login', json={
+        resp = self.app.post('/auth/login', json={
             "email": "petba@example.com",
             "password": "password@12"
         })
-        print("Response JSON:", response.get_json())
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('access_token', response.get_json())
+        print("Response JSON:", resp.get_json())
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn('access_token', resp.get_json())
 
     def testInvalidLogin(self):
         """Testing for invalid user login"""
-        response = self.app.post('/auth/login', json={
+        resp = self.app.post('/auth/login', json={
             "email": "invalid@example.com",
             "password": "wrongpwd"
         })
-        self.assertEqual(response.status_code, 401)
-        self.assertIn('Invalid credentials', response.get_json()["error"])
+        self.assertEqual(resp.status_code, 401)
+        self.assertIn('Invalid credentials', resp.get_json()["error"])
