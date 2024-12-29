@@ -1,27 +1,48 @@
-const API_BASE_URL = 'http://127.0.0.1:5000'; // Update this with your backend URL if different
+import { fetchSummary, fetchTransactions } from './api.js';
 
-async function summaryFetch() {
-    try {
-        const resp = await fetch(`${API_BASE_URL}/api/v1/summary`);
-        if (!resp.ok) {
-            throw new Error(`Error: ${resp.status}`);
-        }
-        const data = await resp.json();
-        return data;
-    } catch (error) {
-        console.error('Failed to fetch summary:', error);
+async function populateSummary() {
+    const summary = await fetchSummary();
+    if (summary) {
+        const summaryContainer = document.getElementById('summary');
+        summaryContainer.innerHTML = `
+            <h2>Summary</h2>
+            <p><strong>Total Income:</strong> $${summary.total_income.toFixed(2)}</p>
+            <p><strong>Total Expenses:</strong> $${summary.total_expenses.toFixed(2)}</p>
+            <p><strong>Net Savings:</strong> $${summary.net_savings.toFixed(2)}</p>
+        `;
     }
 }
 
-async function transactionsFetch() {
-    try {
-        const resp = await fetch(`${API_BASE_URL}/api/v1/transactions`);
-        if (!resp.ok) {
-            throw new Error(`Error: ${response.status}`);
-        }
-        const data = await resp.json();
-        return data;
-    } catch (error) {
-        console.error('Failed to fetch transactions:', error);
+async function populateTransactions() {
+    const transactions = await fetchTransactions();
+    if (transactions) {
+        const transactionsContainer = document.getElementById('transactions');
+        transactionsContainer.innerHTML = `
+            <h2>Transactions</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${transactions.map(tx => `
+                        <tr>
+                            <td>${tx.date}</td>
+                            <td>${tx.category}</td>
+                            <td>$${tx.amount.toFixed(2)}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
     }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    populateSummary();
+    populateTransactions();
+});
+
