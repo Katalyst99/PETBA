@@ -61,3 +61,19 @@ export async function fetchTransactions() {
     }
 }
 
+export async function setBudget(month, limitAmount) {
+    try {
+        const resp = await fetch(`${API_BASE_URL}/budgets/set`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${getToken()}`,
+            },
+            body: JSON.stringify({ month, limit_amount: limitAmount }),
+        });
+        return await resp.json();
+    } catch (error) {
+        console.error('Failed to set budget:', error);
+        return null;
+    }
+}
