@@ -35,8 +35,29 @@
             </form>
         </div>
 
-        <div id="summary" class="dashboard-section"></div>
-        <div id="transactions" class="dashboard-section"></div>
+        <div id="transactions" class="dashboard-section">
+            <h2>Transactions</h2>
+            <form id="transactionForm">
+                <input type="number" id="transactionAmount" placeholder="Amount" required>
+                <input type="text" id="transactionCategory" placeholder="Category" required>
+                <select id="transactionType" required>
+                    <option value="">Select Type</option>
+                    <option value="income">Income</option>
+                    <option value="expense">Expense</option>
+                </select>
+                <button type="submit">Add Transaction</button>
+            </form>
+            <div id="transactionList">
+                <!-- Transactions will be dynamically rendered here -->
+            </div>
+        </div>
+
+        <div id="summary" class="dashboard-section">
+            <h2>Summary</h2>
+            <div id="summaryContent">
+                <!-- Summary data will be dynamically rendered here -->
+            </div>
+        </div>
     </div>
 </body>
 </html>
