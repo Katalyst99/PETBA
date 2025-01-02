@@ -1,4 +1,4 @@
-import { register, login, fetchSummary, fetchTransactions, setBudget } from './api.js';
+import { register, login, fetchSummary, fetchTransactions, setBudget, addTransaction } from './api.js';
 import { populateSummary, populateTransactions } from './ui.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -35,10 +35,29 @@ document.getElementById('budgetForm').addEventListener('submit', async (e) => {
     alert(resp.message || resp.error);
 });
 
+document.getElementById('transactionForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const amount = document.getElementById('transactionAmount').value;
+    const category = document.getElementById('transactionCategory').value;
+    const type = document.getElementById('transactionType').value;
+    const resp = await addTransaction(amount, category, type);
+    alert(resp.message || resp.error);
+    if (resp.message) {
+        loadTransactions();
+    }
+});
+
 async function loadSummary() {
     const month = 'January';
     const summary = await fetchSummary(month);
     if (summary) {
         console.log('Summary:', summary);
+    }
+}
+
+async function loadTransactions() {
+    const transacts = await fetchTransactions();
+    if (transacts) {
+        console.log('Transactions:', transactions);
     }
 }
