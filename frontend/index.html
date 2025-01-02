@@ -10,8 +10,33 @@
 </head>
 <body>
     <div id="app">
+        <div id="auth">
+            <h2>Register</h2>
+            <form id="registerForm">
+                <input type="email" id="registerEmail" placeholder="Email" required>
+                <input type="password" id="registerPassword" placeholder="Password" required>
+                <button type="submit">Register</button>
+            </form>
+
+            <h2>Login</h2>
+            <form id="loginForm">
+                <input type="email" id="loginEmail" placeholder="Email" required>
+                <input type="password" id="loginPassword" placeholder="Password" required>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+
+        <div id="budget" class="dashboard-section">
+            <h2>Set Budget</h2>
+            <form id="budgetForm">
+                <input type="text" id="budgetMonth" placeholder="Month (e.g., January)" required>
+                <input type="number" id="budgetAmount" placeholder="Limit Amount" required>
+                <button type="submit">Set Budget</button>
+            </form>
+        </div>
+
         <div id="summary" class="dashboard-section"></div>
-	<div id="transactions" class="dashboard-section"></div>
+        <div id="transactions" class="dashboard-section"></div>
     </div>
 </body>
 </html>
