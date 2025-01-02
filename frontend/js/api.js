@@ -50,7 +50,9 @@ export async function fetchSummary(month) {
 
 export async function fetchTransactions() {
     try {
-        const resp = await fetch(`${API_BASE_URL}/api/v1/transactions`);
+        const resp = await fetch(`${API_BASE_URL}/transactions/get`, {
+            headers: { Authorization: `Bearer ${getToken()}` },
+        });
         if (!resp.ok) {
             throw new Error(`Error: ${resp.status}`);
         }
@@ -74,6 +76,23 @@ export async function setBudget(month, limitAmount) {
         return await resp.json();
     } catch (error) {
         console.error('Failed to set budget:', error);
+        return null;
+    }
+}
+
+export async function addTransaction(amount, category, type) {
+    try {
+        const resp = await fetch(`${API_BASE_URL}/transactions/add`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${getToken()}`,
+            },
+            body: JSON.stringify({ amount, category, type }),
+        });
+        return await resp.json();
+    } catch (error) {
+        console.error('Failed to add transaction:', error);
         return null;
     }
 }
