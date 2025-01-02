@@ -1,48 +1,44 @@
-import { fetchSummary, fetchTransactions } from './api.js';
-
-async function populateSummary() {
-    const summary = await fetchSummary();
-    if (summary) {
-        const summaryContainer = document.getElementById('summary');
-        summaryContainer.innerHTML = `
-            <h2>Summary</h2>
-            <p><strong>Total Income:</strong> $${summary.total_income.toFixed(2)}</p>
-            <p><strong>Total Expenses:</strong> $${summary.total_expenses.toFixed(2)}</p>
-            <p><strong>Net Savings:</strong> $${summary.net_savings.toFixed(2)}</p>
-        `;
-    }
-}
-
-async function populateTransactions() {
-    const transactions = await fetchTransactions();
-    if (transactions) {
-        const transactionsContainer = document.getElementById('transactions');
-        transactionsContainer.innerHTML = `
-            <h2>Transactions</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Category</th>
-                        <th>Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${transactions.map(tx => `
-                        <tr>
-                            <td>${tx.date}</td>
-                            <td>${tx.category}</td>
-                            <td>$${tx.amount.toFixed(2)}</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        `;
-    }
-}
+import { register, login, fetchSummary, fetchTransactions, setBudget } from './api.js';
+import { populateSummary, populateTransactions } from './ui.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     populateSummary();
     populateTransactions();
 });
 
+document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('registerEmail').value;
+    const password = document.getElementById('registerPassword').value;
+    const resp = await register(email, password);
+    alert(resp.message || resp.error);
+});
+
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    const resp = await login(email, password);
+    if (resp.access_token) {
+        alert('Login successful!');
+        loadSummary();
+    } else {
+        alert(resp.error);
+    }
+});
+
+document.getElementById('budgetForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const month = document.getElementById('budgetMonth').value;
+    const limitAmount = document.getElementById('budgetAmount').value;
+    const resp = await setBudget(month, limitAmount);
+    alert(resp.message || resp.error);
+});
+
+async function loadSummary() {
+    const month = 'January';
+    const summary = await fetchSummary(month);
+    if (summary) {
+        console.log('Summary:', summary);
+    }
+}
