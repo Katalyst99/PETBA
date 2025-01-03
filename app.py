@@ -21,6 +21,19 @@ app.register_blueprint(transaction_bp, url_prefix="/transactions")
 app.register_blueprint(budget_bp, url_prefix="/budgets")
 app.register_blueprint(summary_bp, url_prefix="/summary")
 
+
+@app.route("/", methods=["GET"])
+def serve_index():
+    """Serves the index.html file."""
+    return send_from_directory("frontend", "index.html")
+
+
+@app.route("/<path:filename>", methods=["GET"])
+def serve_static(filename):
+    """Serve static files such as CSS and JS."""
+    return send_from_directory("frontend", filename)
+
+
 with app.app_context():
     db.create_all()
 
