@@ -14,7 +14,7 @@ class TestAuthRoutes(unittest.TestCase):
     def setUp(self):
         """Set up test variables."""
         app.config['TESTING'] = True
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://petba_user:Katalyst@99@localhost/test_db'
         self.app = app.test_client()
         with app.app_context():
             db.create_all()
@@ -31,7 +31,7 @@ class TestAuthRoutes(unittest.TestCase):
         })
         self.assertEqual(resp.status_code, 201)
         self.assertIn("User registered successfully",
-                      resp.get_json()["message"])
+                      resp.get_json().get("message", ""))
 
     def testValidLogin(self):
         """Testing for valid user login"""
@@ -56,4 +56,4 @@ class TestAuthRoutes(unittest.TestCase):
             "password": "wrongpwd"
         })
         self.assertEqual(resp.status_code, 401)
-        self.assertIn('Invalid credentials', resp.get_json()["error"])
+        self.assertIn('Invalid credentials', resp.get_json().get("error", ""))
