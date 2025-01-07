@@ -11,7 +11,7 @@ class TestBudgetRoutes(unittest.TestCase):
     def setUp(self):
         """Set up test variables."""
         app.config['TESTING'] = True
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://petba_user:Katalyst@99@localhost/test_db'
         app.config['JWT_SECRET_KEY'] = 'Union'
         self.app = app.test_client()
         self.app_context = app.app_context()
@@ -35,4 +35,4 @@ class TestBudgetRoutes(unittest.TestCase):
         }, headers={"Authorization": f'Bearer {token}'})
         self.assertEqual(resp.status_code, 201)
         self.assertIn("Budget for December set successfully",
-                      resp.get_json()["message"])
+                      resp.get_json().get("message", ""))
