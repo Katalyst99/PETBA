@@ -2,6 +2,12 @@
 """The module for Transaction model"""
 from db import db
 from datetime import datetime
+from enum import Enum
+
+
+class TransactionType(Enum):
+    INCOME = "income"
+    EXPENSE = "expense"
 
 
 class Transaction(db.Model):
@@ -10,5 +16,5 @@ class Transaction(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     category = db.Column(db.String(50), nullable=False)
-    type = db.Column(db.String(10), nullable=False)
+    type = db.Column(db.Enum(TransactionType), nullable=False)
     date = db.Column(db.DateTime, default=datetime.utcnow)

@@ -7,7 +7,7 @@ from datetime import datetime
 class Expense(db.Model):
     """A model named Expense for a database table named expenses"""
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     category = db.Column(db.String(80), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     month = db.Column(db.String(20), nullable=False)

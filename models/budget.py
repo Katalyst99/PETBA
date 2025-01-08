@@ -10,3 +10,7 @@ class Budget(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     month = db.Column(db.String(10), nullable=False)
     limit_amount = db.Column(db.Float, nullable=False)
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'month', name='unique_user_month'),
+    )
