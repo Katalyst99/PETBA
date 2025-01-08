@@ -23,7 +23,7 @@ def set_budget():
     existingBudget = Budget.query.filter_by(user_id=user_id,
                                             month=month).first()
     if existingBudget:
-        existingBudget.limit_amount = amount
+        existingBudget.limit_amount = limit_amount
     else:
         newBudget = Budget(user_id=user_id, month=month,
                            limit_amount=limit_amount)
