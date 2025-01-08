@@ -13,7 +13,7 @@ budget_bp = Blueprint("budgets", __name__)
 def set_budget():
     """Endpoint to set a budget"""
     data = request.json
-    user_id = get_jwt_identity()
+    user_id = int(get_jwt_identity())
     month = data.get("month")
     limit_amount = data.get("limit_amount")
 
@@ -28,5 +28,11 @@ def set_budget():
         newBudget = Budget(user_id=user_id, month=month,
                            limit_amount=limit_amount)
         db.session.add(newBudget)
-    db.session.commit()
-    return jsonify({"message": f'Budget for {month} set successfully'}), 201
+
+    try:
+        db.session.commit()
+        return jsonify({"msg": f'Budget for {month} set successfully'}), 201
+    except Exception as e:
+        print("Database error:", str(e))
+        db.session.rollback()
+        return jsonify({"error": "Database error occurred"}), 500
