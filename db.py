@@ -20,10 +20,9 @@ try:
     engine = create_engine(Database.SQLALCHEMY_DATABASE_URI)
     engine.connect()
     print("Database connection successful.")
-    engine.close()
 except Exception as e:
     print(f'Database connection failed: {e}')
 
-
+engine.dispose()
 print(f"Loaded URI: {getenv('SQLALCHEMY_DATABASE_URI')}")
 print(f"Loaded Secret Key: {getenv('SECRET_KEY')}")
