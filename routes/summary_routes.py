@@ -13,22 +13,32 @@ summary_bp = Blueprint("summary", __name__)
 @jwt_required()
 def get_summary():
     """Forms a summary report for the authenticated user."""
-    user_id = get_jwt_identity()
-    month = request.args.get("month")
+    try:
+        user_id = int(get_jwt_identity())
+        month = request.args.get("month")
 
-    if not month:
-        return jsonify({"error": "Month parameter is required"}), 400
+        if not month:
+            print("Month parameter missing")
+            return jsonify({"error": "Month parameter is required"}), 400
 
-    budget = Budget.query.filter_by(user_id=user_id, month=month).first()
-    if not budget:
-        return jsonify({"error": f'No budget set for {month}'}), 404
+        budget = Budget.query.filter_by(user_id=user_id, month=month).first()
 
-    expenses = Expense.query.filter_by(user_id=user_id, month=month).all()
-    total = sum(exp.amount for exp in expenses)
+        if not budget:
+            print(f'No budget found for month: {month}')
+            return jsonify({"error": f'No budget set for {month}'}), 404
 
-    return jsonify({
-        "month": month,
-        "budget_limit": budget.limit_amount,
-        "total_spent": total,
-        "remaining_budget": budget.limit_amount - total
-    }), 200
+        expenses = Expense.query.filter_by(user_id=user_id, month=month).all()
+        total = sum(exp.amount for exp in expenses)
+
+        respData = {
+            "month": month,
+            "budget_limit": budget.limit_amount,
+            "total_spent": total,
+            "remaining_budget": budget.limit_amount - total
+        }
+        print(f'Sending response: {respData}')
+        return jsonify(respData), 200
+
+    except Exception as err:
+        print(f'Error in get_summary: {str(err)}')
+        return jsonify({"error": "Internal server error"}), 500
