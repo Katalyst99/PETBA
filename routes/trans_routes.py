@@ -3,7 +3,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from db import db
-from models.transact import Transaction
+from models.transact import Transaction, TransactionType
 
 transaction_bp = Blueprint("transactions", __name__)
 
@@ -12,18 +12,37 @@ transaction_bp = Blueprint("transactions", __name__)
 @jwt_required()
 def add_transaction():
     """Function to respond to the POST /add route."""
-    data = request.json
-    user_id = get_jwt_identity()
-    amount = data.get("amount")
-    category = data.get("category")
-    trans_type = data.get("type")
+    try:
+        data = request.json
+        user_id = int(get_jwt_identity())
+        amount = data.get("amount")
+        category = data.get("category")
+        transType = data.get("type")
 
-    if not all([amount, category, trans_type]):
-        return jsonify({"error": "All fields are required"}), 400
+        if not all([amount, category, transType]):
+            return jsonify({"error": "All fields are required"}), 400
 
-    transaction = Transaction(user_id=user_id, amount=amount,
-                              category=category, type=trans_type)
-    db.session.add(transaction)
-    db.session.commit()
+        try:
+            if transType.lower() == "income":
+                transType = TransactionType.INCOME
+            elif transType.lower() == "expense":
+                transType = TransactionType.EXPENSE
+            else:
+                return jsonify({
+                    "error": "Invalid transaction type. Must be 'income' or 'expense'"
+                }), 400
+        except AttributeError:
+            return jsonify({
+                "error": "Invalid transaction type format"
+            }), 400
 
-    return jsonify({"message": "Transaction added successfully"}), 201
+        trans = Transaction(user_id=user_id, amount=float(amount),
+                            category=category, type=transType)
+        db.session.add(trans)
+        db.session.commit()
+
+        return jsonify({"message": "Transaction added successfully"}), 201
+
+    except Exception as err:
+        db.session.rollback()
+        return jsonify({"error": str(err)}), 500
