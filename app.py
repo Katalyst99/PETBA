@@ -2,6 +2,7 @@
 """ Starts a Flask Web Application """
 import os
 from flask import Flask, send_from_directory
+from flask_cors import CORS
 from db import Database, db
 from routes.auth_routes import auth_bp, jwt
 from routes.trans_routes import transaction_bp
@@ -12,6 +13,7 @@ from routes.summary_routes import summary_bp
 def create_app(testing=False):
     """App factory function"""
     app = Flask(__name__)
+    CORS(app)
     if testing:
         app.config['TESTING'] = True
         app.config['SQLALCHEMY_DATABASE_URI'] = (
