@@ -31,9 +31,10 @@ export function Dashboard() {
     setError(null); // Reset error before fetching
     try {
       // Fetch transactions
-      const transResponse = await fetch('http://localhost:5000/transactions', {
+      const transResponse = await fetch('http://localhost:5000/add', {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+	  'Content-Type': 'application/json'
         }
       });
       if (!transResponse.ok) {
