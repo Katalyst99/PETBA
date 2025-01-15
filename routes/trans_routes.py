@@ -8,13 +8,14 @@ from models.transact import Transaction, TransactionType
 transaction_bp = Blueprint("transactions", __name__)
 
 
-@transaction_bp.route('/add', methods=['POST'], strict_slashes=False)
+@transaction_bp.route('/list', methods=['GET'], strict_slashes=False)
 @jwt_required()
-def add_transaction():
-    """Function to respond to the POST /add route."""
+def lisTransaction():
+    """Function to handle the GET /list route."""
     try:
         data = request.json
         user_id = int(get_jwt_identity())
+        trans = Transaction.query.filter_by(user_id=user_id).all()
         amount = data.get("amount")
         category = data.get("category")
         transType = data.get("type")
