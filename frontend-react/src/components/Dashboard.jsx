@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { TransactionForm } from './TransactionForm';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
 
+const API_BASE_URL = 'http://localhost:5000';
+
 export function Dashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
@@ -28,41 +30,41 @@ export function Dashboard() {
   }, [navigate]);
 
   const fetchDashboardData = async (token) => {
-    setError(null); // Reset error before fetching
+    setError(null);
     try {
-      // Fetch transactions
-      const transResponse = await fetch('http://localhost:5000/add', {
+      // Fetch transactions with correct URL
+      const transResponse = await fetch(`${API_BASE_URL}/transactions/list`, {
         headers: {
           'Authorization': `Bearer ${token}`,
-	  'Content-Type': 'application/json'
+          'Content-Type': 'application/json'
         }
       });
       if (!transResponse.ok) {
-        throw new Error('Failed to fetch transactions');
+        throw new Error(`Failed to fetch transactions: ${transResponse.statusText}`);
       }
       const transData = await transResponse.json();
       setTransactions(transData.slice(0, 5));
 
-      // Fetch budgets
-      const budgetResponse = await fetch('http://localhost:5000/budgets', {
+      // Fetch budgets with correct URL
+      const budgetResponse = await fetch(`${API_BASE_URL}/budgets/list`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       if (!budgetResponse.ok) {
-        throw new Error('Failed to fetch budgets');
+        throw new Error(`Failed to fetch budgets: ${budgetResponse.statusText}`);
       }
       const budgetData = await budgetResponse.json();
       setBudgets(budgetData);
 
-      // Fetch summary
-      const summaryResponse = await fetch('http://localhost:5000/summary', {
+      // Fetch summary with correct URL
+      const summaryResponse = await fetch(`${API_BASE_URL}/summary`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       if (!summaryResponse.ok) {
-        throw new Error('Failed to fetch summary');
+        throw new Error(`Failed to fetch summary: ${summaryResponse.statusText}`);
       }
       const summaryData = await summaryResponse.json();
       setSummary(summaryData);
@@ -70,8 +72,15 @@ export function Dashboard() {
       // Process chart data
       processChartData(transData);
     } catch (err) {
-      console.error(err.message);
-      setError(err.message); // Update error state
+      console.error('Dashboard data fetch error:', err);
+      setError(err.message);
+    }
+  };
+
+  const handleTransactionAdded = async (newTransaction) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      await fetchDashboardData(token); // Refresh all data after new transaction
     }
   };
 
