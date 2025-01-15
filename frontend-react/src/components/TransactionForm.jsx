@@ -33,7 +33,7 @@ export function TransactionForm({ onTransactionAdded }) {
         ? -Math.abs(parseFloat(formData.amount)) 
         : Math.abs(parseFloat(formData.amount));
 
-      const response = await fetch('http://localhost:5000/transactions', {
+      const response = await fetch('http://localhost:5000/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
