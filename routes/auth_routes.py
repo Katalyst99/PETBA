@@ -20,17 +20,29 @@ def register():
 
     if not email or not password:
         return jsonify({"error": "Email and password required"}), 400
+
     exists = User.query.filter_by(email=email).first()
     if exists:
         return jsonify({"error": "Email already registered"}), 400
+
     try:
         hashed = bcrypt.generate_password_hash(password).decode('utf-8')
     except ValueError as error:
         return jsonify({"error": f'Password hashing failed: {error}'}), 500
+
     user = User(email=email, password=hashed)
     db.session.add(user)
     db.session.commit()
-    return jsonify({"message": "User registered successfully"}), 201
+    access_token = create_access_token(identity=user.id)
+
+    return jsonify({
+        "message": "User registered successfully",
+        "token": access_token,
+        "user": {
+            "id": user.id,
+            "email": user.email
+        }
+    }), 201
 
 
 @auth_bp.route('/login', methods=['POST'], strict_slashes=False)
@@ -45,4 +57,10 @@ def login():
         return jsonify({"error": "Invalid credentials"}), 401
 
     access_token = create_access_token(identity=user.id)
-    return jsonify({"access_token": access_token}), 200
+    return jsonify({
+        "token": access_token,
+        "user": {
+            "id": user.id,
+            "email": user.email
+        }
+    }), 200

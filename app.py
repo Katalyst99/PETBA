@@ -3,6 +3,7 @@
 import os
 from flask import Flask, send_from_directory
 from flask_cors import CORS
+from datetime import timedelta
 from db import Database, db
 from routes.auth_routes import auth_bp, jwt
 from routes.trans_routes import transaction_bp
@@ -23,6 +24,10 @@ def create_app(testing=False):
         app.config.from_object(Database)
 
     app.config['JWT_SECRET_KEY'] = 'Union'
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
+    app.config['JWT_TOKEN_LOCATION'] = ['headers']
+    app.config['JWT_HEADER_NAME'] = 'Authorization'
+    app.config['JWT_HEADER_TYPE'] = 'Bearer'
 
     db.init_app(app)
     jwt.init_app(app)
