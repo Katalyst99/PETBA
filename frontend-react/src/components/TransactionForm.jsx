@@ -8,7 +8,7 @@ export function TransactionForm({ onTransactionAdded }) {
     amount: '',
     category: '',
     date: new Date().toISOString().split('T')[0],
-    type: 'expense' // or 'income'
+    type: 'expense'
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,7 +35,8 @@ export function TransactionForm({ onTransactionAdded }) {
         ? -Math.abs(parseFloat(formData.amount)) 
         : Math.abs(parseFloat(formData.amount));
 
-      const response = await fetch(`${API_BASE_URL}/transactions/list`, {
+      // Updated endpoint to match backend
+      const response = await fetch(`${API_BASE_URL}/transactions/add`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -57,9 +58,9 @@ export function TransactionForm({ onTransactionAdded }) {
           date: new Date().toISOString().split('T')[0],
           type: 'expense'
         });
-        onTransactionAdded(data);
+        onTransactionAdded(data.transaction); // Updated to match backend response
       } else {
-        setError(data.message || 'Failed to add transaction');
+        setError(data.error || 'Failed to add transaction');
       }
     } catch (err) {
       setError('Network error. Please try again.');
