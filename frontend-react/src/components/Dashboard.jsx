@@ -32,18 +32,31 @@ export function Dashboard() {
   const fetchDashboardData = async (token) => {
     setError(null);
     try {
-      // Fetch transactions with correct URL
+      const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      };
+
+      // Fetch transactions
       const transResponse = await fetch(`${API_BASE_URL}/transactions/list`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        headers,
+        credentials: 'include'
       });
-      if (!transResponse.ok) {
-        throw new Error(`Failed to fetch transactions: ${transResponse.statusText}`);
+
+      if (transResponse.status === 401) {
+        // Token expired or invalid
+        localStorage.removeItem('token');
+        navigate('/login');
+        return;
       }
+
+      if (!transResponse.ok) {
+        const errorData = await transResponse.json();
+        throw new Error(errorData.error || transResponse.statusText);
+      }
+
       const transData = await transResponse.json();
-      setTransactions(transData.slice(0, 5));
+      setTransactions(transData);
 
       // Fetch budgets with correct URL
       const budgetResponse = await fetch(`${API_BASE_URL}/budgets/list`, {
