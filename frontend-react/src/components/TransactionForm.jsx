@@ -24,18 +24,45 @@ export function TransactionForm({ onTransactionAdded }) {
     'Other'
   ];
 
+  const validateForm = () => {
+    if (!formData.amount || isNaN(formData.amount) || parseFloat(formData.amount) <= 0) {
+      setError('Please enter a valid amount greater than 0');
+      return false;
+    }
+    if (!formData.description.trim()) {
+      setError('Please enter a description');
+      return false;
+    }
+    if (!formData.category) {
+      setError('Please select a category');
+      return false;
+    }
+    if (!formData.date) {
+      setError('Please select a date');
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (!validateForm()) {
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const token = localStorage.getItem('token');
-      const amount = formData.type === 'expense' 
-        ? -Math.abs(parseFloat(formData.amount)) 
-        : Math.abs(parseFloat(formData.amount));
+      if (!token) {
+        setError('Please log in again');
+        return;
+      }
 
-      // Updated endpoint to match backend
+      const amount = parseFloat(formData.amount);
+
       const response = await fetch(`${API_BASE_URL}/transactions/add`, {
         method: 'POST',
         headers: {
@@ -44,7 +71,7 @@ export function TransactionForm({ onTransactionAdded }) {
         },
         body: JSON.stringify({
           ...formData,
-          amount
+          amount: amount
         })
       });
 
@@ -58,11 +85,13 @@ export function TransactionForm({ onTransactionAdded }) {
           date: new Date().toISOString().split('T')[0],
           type: 'expense'
         });
-        onTransactionAdded(data.transaction); // Updated to match backend response
+        onTransactionAdded(data.transaction);
       } else {
         setError(data.error || 'Failed to add transaction');
+        console.error('Transaction error:', data);
       }
     } catch (err) {
+      console.error('Network error:', err);
       setError('Network error. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -80,8 +109,8 @@ export function TransactionForm({ onTransactionAdded }) {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="flex space-x-4">
-          <div className="flex-1">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
             <label className="block text-gray-700 mb-2" htmlFor="type">
               Type
             </label>
@@ -97,7 +126,7 @@ export function TransactionForm({ onTransactionAdded }) {
             </select>
           </div>
           
-          <div className="flex-1">
+          <div>
             <label className="block text-gray-700 mb-2" htmlFor="amount">
               Amount
             </label>
@@ -105,7 +134,7 @@ export function TransactionForm({ onTransactionAdded }) {
               type="number"
               id="amount"
               step="0.01"
-              min="0"
+              min="0.01"
               className="w-full p-2 border rounded"
               value={formData.amount}
               onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
@@ -128,8 +157,8 @@ export function TransactionForm({ onTransactionAdded }) {
           />
         </div>
 
-        <div className="flex space-x-4">
-          <div className="flex-1">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
             <label className="block text-gray-700 mb-2" htmlFor="category">
               Category
             </label>
@@ -149,7 +178,7 @@ export function TransactionForm({ onTransactionAdded }) {
             </select>
           </div>
           
-          <div className="flex-1">
+          <div>
             <label className="block text-gray-700 mb-2" htmlFor="date">
               Date
             </label>
