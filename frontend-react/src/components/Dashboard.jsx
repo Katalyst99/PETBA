@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TransactionForm } from './TransactionForm';
+import TransactionDebug from './TransactionDebug';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
 
 const API_BASE_URL = 'http://localhost:5000';
@@ -167,6 +168,11 @@ export function Dashboard() {
     	    {showTransactionForm ? 'Hide Form' : 'Add Transaction'}
   	  </button>
 	</div>
+
+        {/* Debug Tool - Remove in production */}
+        <div className="mb-8">
+          <TransactionDebug />
+        </div>
 
 	{/* Transaction Form */}
         {showTransactionForm && (
