@@ -45,57 +45,60 @@ export function TransactionForm({ onTransactionAdded }) {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
+      e.preventDefault();
+      setError('');
 
-    if (!validateForm()) {
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setError('Please log in again');
-        return;
+      if (!validateForm()) {
+          return;
       }
 
-      const amount = parseFloat(formData.amount);
+      setIsSubmitting(true);
 
-      const response = await fetch(`${API_BASE_URL}/transactions/add`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          ...formData,
-          amount: amount
-        })
-      });
+      try {
+          const token = localStorage.getItem('token');
+          if (!token) {
+              setError('Please log in again');
+              return;
+          }
 
-      const data = await response.json();
+          const amount = parseFloat(formData.amount);
 
-      if (response.ok) {
-        setFormData({
-          description: '',
-          amount: '',
-          category: '',
-          date: new Date().toISOString().split('T')[0],
-          type: 'expense'
-        });
-        onTransactionAdded(data.transaction);
-      } else {
-        setError(data.error || 'Failed to add transaction');
-        console.error('Transaction error:', data);
+          const formattedDate = new Date(formData.date).toISOString().split('T')[0];
+
+          const response = await fetch(`${API_BASE_URL}/transactions/add`, {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({
+                  ...formData,
+                  amount: amount,
+	          date: formattedDate
+              })
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+              setFormData({
+                  description: '',
+                  amount: '',
+                  category: '',
+                  date: new Date().toISOString().split('T')[0],
+                  type: 'expense'
+              });
+              onTransactionAdded(data.transaction);
+          } else {
+              setError(data.error || data.msg || 'Failed to add transaction');
+              console.error('Transaction error:', data);
+          }
+      } catch (err) {
+          console.error('Network error:', err);
+          setError('Network error. Please try again.');
+      } finally {
+          setIsSubmitting(false);
       }
-    } catch (err) {
-      console.error('Network error:', err);
-      setError('Network error. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   return (
