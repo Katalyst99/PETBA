@@ -39,23 +39,30 @@ def add_transaction():
         if not all(field in data for field in reqFlds):
             return jsonify({"error": "Missing required fields"}), 400
 
-        amount = data['amount']
-        category = data['category']
-        transType = data['type'].lower()
-
-        if transType not in ['income', 'expense']:
+        trans_type = data['type'].lower()
+        if trans_type not in ['income', 'expense']:
             return jsonify({
                 "error": "Invalid transaction type. Must be 'income' or 'expense'"
             }), 400
 
+        # Parse the date if provided
+        transaction_date = None
+        if data.get('date'):
+            try:
+                transaction_date = datetime.strptime(data['date'], '%Y-%m-%d')
+            except ValueError:
+                return jsonify({"error": "Invalid date format. Use YYYY-MM-DD"}), 400
+
+        # Create transaction
         transact = Transaction(
             user_id=user_id,
-            amount=float(amount),
-            category=category,
+            amount=float(data['amount']),
+            category=data['category'],
             type=TransactionType.INCOME if trans_type == 'income' else TransactionType.EXPENSE,
-            description=data.get('description'),
-            date=data.get('date')
+            description=data.get('description', ''),
+            date=transaction_date or datetime.utcnow()
         )
+
         db.session.add(transact)
         db.session.commit()
 
@@ -66,11 +73,23 @@ def add_transaction():
                 "amount": float(transact.amount),
                 "category": transact.category,
                 "type": transact.type.value,
-                "date": transact.date.isoformat() if transaction.date else None,
+                "date": transact.date.isoformat() if transact.date else None,
                 "description": transact.description
             }
         }), 201
 
     except Exception as err:
         db.session.rollback()
+        print(f"Error in add_transaction: {str(err)}")  # Add this for debugging
         return jsonify({"error": str(err)}), 500
+
+
+@transaction_bp.route('/debug', methods=['POST'])
+def debug_transaction():
+    """Debug endpoint to see what data is being received"""
+    data = request.json
+    return jsonify({
+        "received_data": data,
+        "content_type": request.headers.get('Content-Type'),
+        "auth": request.headers.get('Authorization')
+    }), 200
