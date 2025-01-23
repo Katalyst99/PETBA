@@ -49,7 +49,7 @@ export function TransactionForm({ onTransactionAdded }) {
       setError('');
 
       if (!validateForm()) {
-          return;
+        return;
       }
 
       setIsSubmitting(true);
@@ -61,9 +61,14 @@ export function TransactionForm({ onTransactionAdded }) {
               return;
           }
 
-          const amount = parseFloat(formData.amount);
+          const requestData = {
+              ...formData,
+              amount: parseFloat(formData.amount),
+              date: formData.date
+          };
 
-          const formattedDate = new Date(formData.date).toISOString().split('T')[0];
+          console.log('Sending request with data:', requestData);  // Debug log
+          console.log('Using token:', token);  // Debug log
 
           const response = await fetch(`${API_BASE_URL}/transactions/add`, {
               method: 'POST',
@@ -71,27 +76,32 @@ export function TransactionForm({ onTransactionAdded }) {
                   'Content-Type': 'application/json',
                   'Authorization': `Bearer ${token}`
               },
-              body: JSON.stringify({
-                  ...formData,
-                  amount: amount,
-	          date: formattedDate
-              })
+              body: JSON.stringify(requestData)
           });
 
-          const data = await response.json();
+          console.log('Response status:', response.status);
+          const responseData = await response.text();
 
-          if (response.ok) {
-              setFormData({
-                  description: '',
-                  amount: '',
-                  category: '',
-                  date: new Date().toISOString().split('T')[0],
-                  type: 'expense'
-              });
-              onTransactionAdded(data.transaction);
-          } else {
-              setError(data.error || data.msg || 'Failed to add transaction');
-              console.error('Transaction error:', data);
+	  try {
+              const parsedData = JSON.parse(responseData);
+              console.log('Parsed response data:', parsedData);
+
+              if (response.ok) {
+                  setFormData({
+                      description: '',
+                      amount: '',
+                      category: '',
+                      date: new Date().toISOString().split('T')[0],
+                      type: 'expense'
+                  });
+                  onTransactionAdded(parsedData.transaction);
+              } else {
+                  setError(parsedData.error || parsedData.msg || 'Failed to add transaction');
+                  console.error('Transaction error:', parsedData);
+              }
+          } catch (parseError) {
+              console.error('Failed to parse response:', responseData);
+              setError(`Unexpected response: ${responseData}`);
           }
       } catch (err) {
           console.error('Network error:', err);
