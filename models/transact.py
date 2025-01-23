@@ -12,6 +12,8 @@ class TransactionType(Enum):
 
 class Transaction(db.Model):
     """A model named Transaction for a database table named transactions"""
+    __tablename__ = 'transactions'
+
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     amount = db.Column(db.Float, nullable=False)
@@ -19,3 +21,10 @@ class Transaction(db.Model):
     type = db.Column(db.Enum(TransactionType), nullable=False)
     description = db.Column(db.String(200))
     date = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __init__(self, **kwargs):
+        print(f"Creating Transaction with kwargs: {kwargs}")  # Debug print
+        super().__init__(**kwargs)
+
+    def __repr__(self):
+        return f'<Transaction {self.id}: {self.type.value} {self.amount}>'
