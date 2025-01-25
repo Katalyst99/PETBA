@@ -39,6 +39,10 @@ def add_transaction():
         print("Full Request Data:", request.get_data(as_text=True))
         print("Parsed JSON:", request.json)
 
+        current_user_id = get_jwt_identity()
+        print(f"Current User ID (JWT): {current_user_id}")
+        print(f"JWT Identity Type: {type(current_user_id)}")
+
         data = request.json
         print("Received data type:", type(data))
 
