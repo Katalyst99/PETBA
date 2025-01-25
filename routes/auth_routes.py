@@ -11,8 +11,13 @@ jwt = JWTManager()
 auth_bp = Blueprint("auth", __name__)
 
 
-def create_jwt_token(user_id):
-    return create_access_token(identity=str(user_id))
+def create_jwt_token(user):
+    return create_access_token(
+        identity=str(user.id),  # Explicit string conversion
+        additional_claims={
+            'user_id': str(user.id)  # Redundant string conversion
+        }
+    )
 
 
 @auth_bp.route('/register', methods=['POST'], strict_slashes=False)
