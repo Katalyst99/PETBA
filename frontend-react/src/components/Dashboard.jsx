@@ -19,7 +19,7 @@ export function Dashboard() {
     totalExpenses: 0,
     balance: 0
   });
-  const [error, setError] = useState(null); // New state for errors
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -32,43 +32,40 @@ export function Dashboard() {
 
   const fetchDashboardData = async (token) => {
     try {
-      const transResponse = await fetch(`${API_BASE_URL}/transactions/list`, {
-        method: 'GET', // Explicitly set method
+      const transResp = await fetch(`${API_BASE_URL}/transactions/list`, {
+        method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
 
-      // Fetch budgets with correct URL
-      const budgetResponse = await fetch(`${API_BASE_URL}/budgets/list`, {
+      const budgetResp = await fetch(`${API_BASE_URL}/budgets/list`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
       let budgetData = [];
-      if (budgetResponse.ok) {
-        budgetData = await budgetResponse.json();
+      if (budgetResp.ok) {
+        budgetData = await budgetResp.json();
       }
 
-      const transData = await transResponse.json();
+      const transData = await transResp.json();
       setTransactions(transData);
       setBudgets(budgetData);
 
-      // Fetch summary with correct URL
-      const summaryResponse = await fetch(`${API_BASE_URL}/summary/get`, {
+      const summaryResp = await fetch(`${API_BASE_URL}/summary/get`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-      if (!summaryResponse.ok) {
-        throw new Error(`Failed to fetch summary: ${summaryResponse.statusText}`);
+      if (!summaryResp.ok) {
+        throw new Error(`Failed to fetch summary: ${summaryResp.statusText}`);
       }
-      const summaryData = await summaryResponse.json();
+      const summaryData = await summaryResp.json();
       setSummary(summaryData);
 
-      // Process chart data
       processChartData(transData);
     } catch (err) {
       console.error('Dashboard data fetch error:', err);
@@ -79,7 +76,7 @@ export function Dashboard() {
   const handleTransactionAdded = async (newTransaction) => {
     const token = localStorage.getItem('token');
     if (token) {
-      await fetchDashboardData(token); // Refresh all data after new transaction
+      await fetchDashboardData(token);
     }
   };
 
@@ -153,11 +150,6 @@ export function Dashboard() {
     	    {showTransactionForm ? 'Hide Form' : 'Add Transaction'}
   	  </button>
 	</div>
-
-        {/* Debug Tool - Remove in production */}
-        <div className="mb-8">
-          <TransactionDebug />
-        </div>
 
 	{/* Transaction Form */}
         {showTransactionForm && (
