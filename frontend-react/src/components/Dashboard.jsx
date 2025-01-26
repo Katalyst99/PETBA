@@ -31,33 +31,14 @@ export function Dashboard() {
   }, [navigate]);
 
   const fetchDashboardData = async (token) => {
-    setError(null);
     try {
-      const headers = {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      };
-
-      // Fetch transactions
       const transResponse = await fetch(`${API_BASE_URL}/transactions/list`, {
-        headers,
-        credentials: 'include'
+        method: 'GET', // Explicitly set method
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
-
-      if (transResponse.status === 401) {
-        // Token expired or invalid
-        localStorage.removeItem('token');
-        navigate('/login');
-        return;
-      }
-
-      if (!transResponse.ok) {
-        const errorData = await transResponse.json();
-        throw new Error(errorData.error || transResponse.statusText);
-      }
-
-      const transData = await transResponse.json();
-      setTransactions(transData);
 
       // Fetch budgets with correct URL
       const budgetResponse = await fetch(`${API_BASE_URL}/budgets/list`, {
@@ -65,14 +46,18 @@ export function Dashboard() {
           'Authorization': `Bearer ${token}`
         }
       });
-      if (!budgetResponse.ok) {
-        throw new Error(`Failed to fetch budgets: ${budgetResponse.statusText}`);
+
+      let budgetData = [];
+      if (budgetResponse.ok) {
+        budgetData = await budgetResponse.json();
       }
-      const budgetData = await budgetResponse.json();
+
+      const transData = await transResponse.json();
+      setTransactions(transData);
       setBudgets(budgetData);
 
       // Fetch summary with correct URL
-      const summaryResponse = await fetch(`${API_BASE_URL}/summary`, {
+      const summaryResponse = await fetch(`${API_BASE_URL}/summary/get`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
