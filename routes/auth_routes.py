@@ -58,18 +58,16 @@ def register():
 def login():
     """Function to respond to the POST /login route."""
     data = request.json
-    email = data.get("email")
-    password = data.get("password")
+    user = User.query.filter_by(email=data['email']).first()
 
-    user = User.query.filter_by(email=email).first()
-    if not user or not check_password_hash(user.password, password):
-        return jsonify({"error": "Invalid credentials"}), 401
+    if user and check_password_hash(user.password, data['password']):
+        access_token = create_access_token(
+            identity=str(user.id),
+            additional_claims={'email': user.email}
+        )
+        return jsonify({
+            'token': access_token,
+            'user_id': user.id
+        }), 200
 
-    access_token = create_access_token(identity=user.id)
-    return jsonify({
-        "token": access_token,
-        "user": {
-            "id": user.id,
-            "email": user.email
-        }
-    }), 200
+    return jsonify({"error": "Invalid credentials"}), 401
