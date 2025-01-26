@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """The module for Transaction endpoints"""
+from datetime import datetime
+from enum import Enum
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 import json
@@ -25,6 +27,7 @@ def list_transactions():
             'description': trans.description if hasattr(trans, 'description') else None
         } for trans in transacts]), 200
     except Exception as err:
+        print(f"Transaction list error: {str(e)}")
         return jsonify({"error": str(err)}), 500
 
 
@@ -33,65 +36,46 @@ def list_transactions():
 def add_transaction():
     """Function to handle the POST /add route."""
     try:
-        # Comprehensive logging
-        print("\n--- Transaction Add Endpoint ---")
-        print("Headers:", dict(request.headers))
-        print("Full Request Data:", request.get_data(as_text=True))
-        print("Parsed JSON:", request.json)
-
         current_user_id = get_jwt_identity()
         print(f"Current User ID (JWT): {current_user_id}")
         print(f"JWT Identity Type: {type(current_user_id)}")
 
         data = request.json
-        print("Received data type:", type(data))
 
-        user_id = int(get_jwt_identity())
-        print("User ID:", user_id)
-
-        # Validate required fields
         reqFlds = ['amount', 'category', 'type']
-        if not all(field in data for field in reqFlds):
-            missing = [f for f in reqFlds if f not in data]
-            print(f"Missing fields: {missing}")
-            return jsonify({"error": f"Missing required fields: {missing}"}), 400
+        for fld in reqFlds:
+            if fld not in data:
+                return jsonify({"error": f'Missing required field: {field}'}), 400
 
-        try:
-            # Explicit type conversion and validation
-            transaction_data = {
-                'user_id': user_id,
-                'amount': float(data['amount']),
-                'category': str(data['category']),
-                'type': TransactionType.INCOME if data['type'].lower() == 'income' else TransactionType.EXPENSE,
-                'description': str(data.get('description', '')),
-                'date': datetime.strptime(data['date'], '%Y-%m-%d') if data.get('date') else datetime.utcnow()
+        transType = TransactionType(data['type'].lower())
+
+        transaction = Transaction(
+            user_id=int(current_user_id),
+            amount=float(data['amount']),
+            category=data['category'],
+            type=transType,
+            description=data.get('description', ''),
+            date=datetime.strptime(data.get('date', datetime.utcnow().strftime('%Y-%m-%d')), '%Y-%m-%d')
+        )
+
+        db.session.add(transaction)
+        db.session.commit()
+
+        return jsonify({
+            "message": "Transaction added successfully",
+            "transaction": {
+                "id": transaction.id,
+                "amount": transaction.amount,
+                "category": transaction.category,
+                "type": transaction.type.value,
+                "description": transaction.description,
+                "date": transaction.date.isoformat()
             }
+        }), 201
 
-            print("Processed transaction data:", transaction_data)
-
-            transact = Transaction(**transaction_data)
-            db.session.add(transact)
-            db.session.commit()
-
-            return jsonify({
-                "message": "Transaction added successfully",
-                "transaction": {
-                    "id": transact.id,
-                    "amount": float(transact.amount),
-                    "category": transact.category,
-                    "type": transact.type.value,
-                    "date": transact.date.isoformat() if transact.date else None,
-                    "description": transact.description
-                }
-            }), 201
-
-        except ValueError as ve:
-            print(f"Value Error: {ve}")
-            return jsonify({"error": f"Data validation error: {str(ve)}"}), 400
-
-    except Exception as err:
+    except ValueError as err:
+        return jsonify({"error": "Invalid transaction type"}), 400
+    except Exception as e:
         db.session.rollback()
-        print(f"Error in add_transaction: {str(err)}")
-        import traceback
-        print(f"Traceback: {traceback.format_exc()}")
-        return jsonify({"error": str(err)}), 500
+        print(f'Transaction Add Error: {e}')
+        return jsonify({"error": str(e)}), 500
