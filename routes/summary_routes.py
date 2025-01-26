@@ -2,8 +2,12 @@
 """The module for Summary of expenses and budgets endpoints"""
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from sqlalchemy import func
+from sqlalchemy.exc import SQLAlchemyError
+from datetime import datetime
 from db import db
 from models.budget import Budget
+from models.transact import Transaction, TransactionType
 from models.expense import Expense
 
 summary_bp = Blueprint("summary", __name__)
@@ -15,30 +19,30 @@ def get_summary():
     """Forms a summary report for the authenticated user."""
     try:
         user_id = int(get_jwt_identity())
-        month = request.args.get("month")
 
-        if not month:
-            print("Month parameter missing")
-            return jsonify({"error": "Month parameter is required"}), 400
+        total_income = db.session.query(func.coalesce(func.sum(Transaction.amount), 0)).filter(
+            Transaction.user_id == user_id,
+            Transaction.type == TransactionType.INCOME
+        ).scalar()
 
-        budget = Budget.query.filter_by(user_id=user_id, month=month).first()
+        total_expenses = db.session.query(func.coalesce(func.sum(Transaction.amount), 0)).filter(
+            Transaction.user_id == user_id,
+            Transaction.type == TransactionType.EXPENSE
+        ).scalar()
 
-        if not budget:
-            print(f'No budget found for month: {month}')
-            return jsonify({"error": f'No budget set for {month}'}), 404
+        balance = total_income - total_expenses
 
-        expenses = Expense.query.filter_by(user_id=user_id, month=month).all()
-        total = sum(exp.amount for exp in expenses)
+        return jsonify({
+            'totalIncome': total_income,
+            'totalExpenses': total_expenses,
+            'balance': balance
+        }), 200
 
-        respData = {
-            "month": month,
-            "budget_limit": budget.limit_amount,
-            "total_spent": total,
-            "remaining_budget": budget.limit_amount - total
-        }
-        print(f'Sending response: {respData}')
-        return jsonify(respData), 200
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        print(f"Database Error in Summary Route: {str(e)}")
+        return jsonify({"error": "Database processing error"}), 500
 
-    except Exception as err:
-        print(f'Error in get_summary: {str(err)}')
-        return jsonify({"error": "Internal server error"}), 500
+    except Exception as e:
+        print(f"Unexpected Error in Summary Route: {str(e)}")
+        return jsonify({"error": "Unexpected error processing summary"}), 500
