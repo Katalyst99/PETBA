@@ -14,7 +14,7 @@ from routes.summary_routes import summary_bp
 def create_app(testing=False):
     """App factory function"""
     app = Flask(__name__)
-    CORS(app)
+    CORS(app, resources={r"/*": {"origins": "*", "methods": ["GET", "POST", "OPTIONS"]}})
     if testing:
         app.config['TESTING'] = True
         app.config['SQLALCHEMY_DATABASE_URI'] = (
@@ -23,7 +23,7 @@ def create_app(testing=False):
     else:
         app.config.from_object(Database)
 
-    app.config['JWT_SECRET_KEY'] = 'Union'
+    app.config['JWT_SECRET_KEY'] = os.urandom(24)
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
     app.config['JWT_TOKEN_LOCATION'] = ['headers']
     app.config['JWT_HEADER_NAME'] = 'Authorization'
@@ -46,6 +46,12 @@ def create_app(testing=False):
     def serve_static(filename):
         """Serve static files such as CSS and JS."""
         return send_from_directory("frontend", filename)
+
+    @app.errorhandler(422)
+    def handle_unprocessable_entity(error):
+        """Error handling"""
+        return jsonify(error=str(error)), 422
+
     return app
 
 
