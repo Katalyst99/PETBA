@@ -2,10 +2,33 @@
 """The module for Budget endpoints"""
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from sqlalchemy import func
 from db import db
+from models.transact import Transaction, TransactionType
 from models.budget import Budget
 
 budget_bp = Blueprint("budgets", __name__)
+
+
+@budget_bp.route('/list', methods=['GET'])
+@jwt_required()
+def list_budgets():
+    """Function to handle the GET /list route."""
+    try:
+        user_id = int(get_jwt_identity())
+        budgets = Budget.query.filter_by(user_id=user_id).all()
+
+        budget_list = [{
+            'month': budget.month,
+            'limit': budget.limit_amount,
+            'spent': budget.calculate_spent(db.session),
+            'category': budget.month
+        } for budget in budgets]
+
+        return jsonify(budget_list), 200
+    except Exception as e:
+        print(f"Budget list error: {str(e)}")
+        return jsonify({"error": "Failed to retrieve budgets"}), 500
 
 
 @budget_bp.route('/set', methods=['POST'], strict_slashes=False)
