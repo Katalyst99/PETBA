@@ -22,9 +22,12 @@ class Transaction(db.Model):
     description = db.Column(db.String(200))
     date = db.Column(db.DateTime, default=datetime.utcnow)
 
-    def __init__(self, **kwargs):
-        print(f"Creating Transaction with kwargs: {kwargs}")  # Debug print
-        super().__init__(**kwargs)
-
-    def __repr__(self):
-        return f'<Transaction {self.id}: {self.type.value} {self.amount}>'
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'amount': float(self.amount),
+            'category': self.category,
+            'type': self.type.value,
+            'description': self.description,
+            'date': self.date.isoformat()
+        }

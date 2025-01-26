@@ -35,47 +35,43 @@ def list_transactions():
 @jwt_required()
 def add_transaction():
     """Function to handle the POST /add route."""
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+
     try:
-        current_user_id = get_jwt_identity()
-        print(f"Current User ID (JWT): {current_user_id}")
-        print(f"JWT Identity Type: {type(current_user_id)}")
+        user_id = int(get_jwt_identity())
+        data = request.get_json()
 
-        data = request.json
-
-        reqFlds = ['amount', 'category', 'type']
+        reqFlds = ['amount', 'type', 'category', 'description', 'date']
         for fld in reqFlds:
             if fld not in data:
-                return jsonify({"error": f'Missing required field: {field}'}), 400
-
-        transType = TransactionType(data['type'].lower())
+                return jsonify({
+                    "status": "error",
+                    "message": f'Missing required field: {fld}'
+                }), 400
 
         transaction = Transaction(
-            user_id=int(current_user_id),
-            amount=float(data['amount']),
+            user_id=user_id,
+            amount=data['amount'],
+            type=TransactionType(data['type']),
             category=data['category'],
-            type=transType,
-            description=data.get('description', ''),
-            date=datetime.strptime(data.get('date', datetime.utcnow().strftime('%Y-%m-%d')), '%Y-%m-%d')
+            description=data['description'],
+            date=datetime.fromisoformat(data['date'])
         )
-
         db.session.add(transaction)
         db.session.commit()
 
         return jsonify({
-            "message": "Transaction added successfully",
-            "transaction": {
-                "id": transaction.id,
-                "amount": transaction.amount,
-                "category": transaction.category,
-                "type": transaction.type.value,
-                "description": transaction.description,
-                "date": transaction.date.isoformat()
+            "status": 201,
+            "data": {
+                "message": "Transaction added successfully",
+                "transaction": transaction.to_dict()
             }
         }), 201
 
-    except ValueError as err:
-        return jsonify({"error": "Invalid transaction type"}), 400
     except Exception as e:
         db.session.rollback()
-        print(f'Transaction Add Error: {e}')
-        return jsonify({"error": str(e)}), 500
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
