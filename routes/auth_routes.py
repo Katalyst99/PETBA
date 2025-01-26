@@ -12,10 +12,11 @@ auth_bp = Blueprint("auth", __name__)
 
 
 def create_jwt_token(user):
+    """Creates a token"""
     return create_access_token(
-        identity=str(user.id),  # Explicit string conversion
+        identity=str(user.id),
         additional_claims={
-            'user_id': str(user.id)  # Redundant string conversion
+            'user_id': str(user.id)
         }
     )
 
